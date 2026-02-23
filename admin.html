@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Food Price Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+<!-- Login Overlay -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-chrome">
+    <div class="lc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
+    <span class="lc-title">admin@foodpredictor — secure-shell</span>
+  </div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="lb-icon">🔐</div>
+      <div>
+        <div class="lb-title">ADMIN PORTAL</div>
+        <div class="lb-sub">Food Price Predictor — Secure Access</div>
+      </div>
+    </div>
+    <div class="sysbox">
+      <span class="sg">system</span>: SECURE SHELL ACTIVE<br>
+      <span class="sg">auth</span>&nbsp;&nbsp;: PBKDF2-SHA256 ENABLED<br>
+      <span class="sr">warn</span>&nbsp;&nbsp;: UNAUTHORIZED ACCESS IS LOGGED<span class="blink">_</span>
+    </div>
+    <div class="login-err" id="login-err" style="display:none">⚠ Invalid credentials</div>
+    <div class="lf-group">
+      <label>// username</label>
+      <input type="text" id="l-user" placeholder="admin" autocomplete="username" />
+    </div>
+    <div class="lf-group">
+      <label>// password</label>
+      <input type="password" id="l-pass" placeholder="••••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">ACCESS DASHBOARD →</button>
+    <a href="index.html" class="login-back">← Return to public site</a>
+  </div>
+</div>
+
+<!-- Dashboard (hidden until login) -->
+<div id="dashboard" class="dashboard" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">📈</div>
+      <div>
+        <div class="sb-title">FOOD PREDICTOR</div>
+        <div class="sb-sub">Admin Panel</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">analytics</div>
+      <div class="sb-item active" data-tab="overview">
+        <span>📊</span> Overview
+      </div>
+      <div class="sb-item" data-tab="prices">
+        <span>📈</span> Price Statistics
+      </div>
+      <div class="sb-section">security</div>
+      <div class="sb-item" data-tab="logs">
+        <span>🔍</span> Security Logs
+      </div>
+      <div class="sb-item" data-tab="monitor">
+        <span>🖥</span> System Monitor
+      </div>
+      <div class="sb-section">tools</div>
+      <div class="sb-item" onclick="window.open('index.html','_blank')">
+        <span>🌐</span> Public Site ↗
+      </div>
+    </nav>
+    <div class="sb-foot">
+      <button class="logout-btn" onclick="doLogout()">🔒 Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="topbar">
+      <span class="tb-path"><strong>root@foodpredictor</strong> ~/admin/dashboard</span>
+      <div class="tb-right">
+        <span class="online-dot"></span>
+        <span class="online-txt">SYSTEM ONLINE</span>
+        <span id="clock" class="tb-clock"></span>
+      </div>
+    </div>
+
+    <div class="dash-content">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab active" id="tab-overview">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="sc-icon">🔮</div>
+            <div class="sc-val" id="st-total">0</div>
+            <div class="sc-lbl">Total Predictions</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">📅</div>
+            <div class="sc-val" id="st-today">0</div>
+            <div class="sc-lbl">Today's Predictions</div>
+          </div>
+          <div class="stat-card warn">
+            <div class="sc-icon">⚠️</div>
+            <div class="sc-val yellow" id="st-warn">0</div>
+            <div class="sc-lbl">Security Warnings</div>
+          </div>
+          <div class="stat-card crit">
+            <div class="sc-icon">🚨</div>
+            <div class="sc-val red" id="st-crit">0</div>
+            <div class="sc-lbl">Critical Alerts</div>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <div class="cpanel">
+            <h3><span class="cc">//</span> Maize Price — Year Over Year</h3>
+            <canvas id="ch-yoy"></canvas>
+          </div>
+          <div class="cpanel">
+            <h3><span class="cc">//</span> Top Queried Counties</h3>
+            <canvas id="ch-counties"></canvas>
+          </div>
+          <div class="cpanel full">
+            <h3><span class="cc">//</span> Monthly Averages by Category (Current Year)</h3>
+            <canvas id="ch-cats"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRICES TAB -->
+      <div class="tab" id="tab-prices">
+        <div class="chart-grid">
+          <div class="cpanel full">
+            <h3><span class="cc">//</span> All Categories — Monthly Price Averages</h3>
+            <canvas id="ch-allcat"></canvas>
+          </div>
+          <div class="cpanel"><h3><span class="cc">//</span> Vegetables Monthly</h3><canvas id="ch-veg"></canvas></div>
+          <div class="cpanel"><h3><span class="cc">//</span> Fruits Monthly</h3><canvas id="ch-fruit"></canvas></div>
+          <div class="cpanel"><h3><span class="cc">//</span> Grains Monthly</h3><canvas id="ch-grain"></canvas></div>
+          <div class="cpanel"><h3><span class="cc">//</span> Proteins Monthly</h3><canvas id="ch-prot"></canvas></div>
+        </div>
+      </div>
+
+      <!-- LOGS TAB -->
+      <div class="tab" id="tab-logs">
+        <div class="log-toolbar">
+          <span class="lt-lbl">FILTER:</span>
+          <button class="fb active" data-sev="" onclick="filterLogs(this,'')">ALL</button>
+          <button class="fb" data-sev="INFO" onclick="filterLogs(this,'INFO')">INFO</button>
+          <button class="fb yellow" data-sev="WARNING" onclick="filterLogs(this,'WARNING')">WARNING</button>
+          <button class="fb red" data-sev="CRITICAL" onclick="filterLogs(this,'CRITICAL')">CRITICAL</button>
+          <button class="fb ml" onclick="refreshLogs()">⟳ Refresh</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Timestamp</th><th>Event</th><th>Severity</th><th>IP</th><th>Message</th></tr></thead>
+            <tbody id="logs-tbody"><tr><td colspan="6" class="tbl-empty">Loading logs…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MONITOR TAB -->
+      <div class="tab" id="tab-monitor">
+        <div class="mon-grid">
+          <div class="mcard">
+            <h4>// system resources</h4>
+            <div class="bar-row"><div class="br-top"><span>CPU</span><span id="m-cpu">—</span></div>
+              <div class="bar"><div class="bf" id="b-cpu" style="width:0%"></div></div></div>
+            <div class="bar-row"><div class="br-top"><span>Memory</span><span id="m-mem">—</span></div>
+              <div class="bar"><div class="bf" id="b-mem" style="width:0%"></div></div></div>
+            <div class="bar-row"><div class="br-top"><span>Disk I/O</span><span id="m-disk">—</span></div>
+              <div class="bar"><div class="bf yellow" id="b-disk" style="width:0%"></div></div></div>
+          </div>
+          <div class="mcard">
+            <h4>// service status</h4>
+            <div class="svc">
+              <div class="sr2"><span>Flask API</span><span class="ok">● RUNNING</span></div>
+              <div class="sr2"><span>SQLite DB</span><span class="ok">● ONLINE</span></div>
+              <div class="sr2"><span>Price Engine</span><span class="ok">● ACTIVE</span></div>
+              <div class="sr2"><span>Auth Service</span><span class="ok">● SECURE</span></div>
+              <div class="sr2"><span>Log Monitor</span><span class="ok">● WATCHING</span></div>
+            </div>
+          </div>
+          <div class="mcard">
+            <h4>// security metrics</h4>
+            <div class="svc" id="sec-metrics">Loading…</div>
+          </div>
+          <div class="mcard">
+            <h4>// live activity feed</h4>
+            <div class="feed" id="feed"></div>
+          </div>
+        </div>
+        <div class="cpanel" style="margin-top:1rem">
+          <h3><span class="cc">//</span> Security Events — 7 Day View</h3>
+          <canvas id="ch-sec"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

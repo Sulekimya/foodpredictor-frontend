@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Price Predictor — Kenya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ── Top Nav ── -->
+<nav class="topnav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="nav-icon">📈</div>
+      <div>
+        <div class="nav-title">Food Price Predictor</div>
+        <div class="nav-sub">5-Year Market Analysis</div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="nav-badge">🇰🇪 Kenya</span>
+      <a href="admin.html" class="nav-admin-link">Admin ↗</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main Layout ── -->
+<main class="main-layout">
+
+  <!-- Left: Prediction Form -->
+  <section class="form-section">
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="form-card-icon">🔍</span>
+        <div>
+          <h2>Price Prediction</h2>
+          <p>Fill in all fields to get your prediction</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <!-- Year -->
+        <div class="field-group">
+          <label for="sel-year">Year</label>
+          <select id="sel-year">
+            <option value="">Select year</option>
+            <option value="2024">2024</option>
+            <option value="2025" selected>2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+          </select>
+        </div>
+
+        <!-- Month -->
+        <div class="field-group">
+          <label for="sel-month">Month</label>
+          <select id="sel-month">
+            <option value="">Select month</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+
+        <!-- County -->
+        <div class="field-group">
+          <label for="sel-county">County</label>
+          <select id="sel-county" onchange="loadSubCounties()">
+            <option value="">Select county</option>
+          </select>
+        </div>
+
+        <!-- Sub-County -->
+        <div class="field-group">
+          <label for="sel-subcounty">Sub-County</label>
+          <select id="sel-subcounty" disabled>
+            <option value="">Select sub-county</option>
+          </select>
+        </div>
+
+        <!-- Food Category -->
+        <div class="field-group">
+          <label for="sel-category">Food Category</label>
+          <select id="sel-category" onchange="loadFoodTypes()">
+            <option value="">Select food category</option>
+          </select>
+        </div>
+
+        <!-- Food Type -->
+        <div class="field-group">
+          <label for="sel-foodtype">Food Type</label>
+          <select id="sel-foodtype" disabled>
+            <option value="">Select food type</option>
+          </select>
+        </div>
+
+        <button class="predict-btn" id="btn-predict" onclick="runPrediction()">
+          <span id="btn-icon">🧮</span>
+          <span id="btn-text">Predict Price</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stats-strip" id="stats-strip" style="display:none">
+      <div class="stat-pill">
+        <span class="sp-icon">📍</span>
+        <span class="sp-val" id="sp-county">—</span>
+        <span class="sp-lbl">County</span>
+      </div>
+      <div class="stat-pill">
+        <span class="sp-icon">🗓</span>
+        <span class="sp-val" id="sp-month">—</span>
+        <span class="sp-lbl">Month</span>
+      </div>
+      <div class="stat-pill">
+        <span class="sp-icon">🥬</span>
+        <span class="sp-val" id="sp-food">—</span>
+        <span class="sp-lbl">Item</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: Results -->
+  <section class="results-section" id="results-section">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>Your prediction will appear here</h3>
+      <p>Select all fields and click "Predict Price" to see market analysis</p>
+    </div>
+
+    <!-- Result content (hidden until prediction) -->
+    <div class="result-content" id="result-content" style="display:none">
+
+      <!-- Price Banner -->
+      <div class="price-banner">
+        <div class="price-left">
+          <div class="price-label">PREDICTED MARKET PRICE</div>
+          <div class="price-main">
+            <span class="price-currency">KES</span>
+            <span class="price-amount" id="out-price">0.00</span>
+            <span class="price-unit">/kg</span>
+          </div>
+          <div class="price-context" id="out-context"></div>
+        </div>
+        <div class="price-right">
+          <div class="confidence-ring">
+            <svg viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="8"/>
+              <circle cx="40" cy="40" r="34" fill="none" stroke="white" stroke-width="8"
+                stroke-dasharray="213.6" stroke-dashoffset="54" stroke-linecap="round"
+                transform="rotate(-90 40 40)"/>
+            </svg>
+            <div class="ring-label">75%<br><small>confidence</small></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="range-row">
+        <div class="range-card low">
+          <div class="rc-label">Low Estimate</div>
+          <div class="rc-val" id="out-low">—</div>
+        </div>
+        <div class="range-card mid">
+          <div class="rc-label">Predicted</div>
+          <div class="rc-val" id="out-mid">—</div>
+        </div>
+        <div class="range-card high">
+          <div class="rc-label">High Estimate</div>
+          <div class="rc-val" id="out-high">—</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h4>Monthly Price Trend</h4>
+          <canvas id="ch-monthly" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>5-Year Historical Average</h4>
+          <canvas id="ch-yoy" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Insight cards -->
+      <div class="insights-row">
+        <div class="insight-card">
+          <div class="ic-icon">📈</div>
+          <div class="ic-body">
+            <div class="ic-title">Year Trend</div>
+            <div class="ic-val" id="ins-trend">—</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="ic-icon">🌦</div>
+          <div class="ic-body">
+            <div class="ic-title">Season Impact</div>
+            <div class="ic-val" id="ins-season">—</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="ic-icon">📊</div>
+          <div class="ic-body">
+            <div class="ic-title">County Index</div>
+            <div class="ic-val" id="ins-county">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
